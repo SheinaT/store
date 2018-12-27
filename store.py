@@ -58,6 +58,44 @@ def delete_category(id):
     except Exception:
         return json.dumps({'STATUS': 'ERROR', 'MSG': 'INTERNAL ERROR', 'CODE': 500})
 
+
+# @post("/product")
+# def get_category():
+#     name = request.POST.get("name")
+#     if not name:
+#         return json.dumps({'STATUS': 'ERROR', 'MSG': 'NAME PARAMETER IS MISSING', 'CODE': 400})
+#
+#     try:
+#         with connection.cursor() as cursor:
+#             query="Select * From categories WHERE NAME= '{}'".format(name)
+#             cursor.execute(query)
+#             result = cursor.fetchone()
+#             if result:
+#                 return json.dumps({'STATUS':'ERROR', 'MSG': 'CATEGORY ALREADY EXISTS', 'CODE':200})
+#
+#             sql = "INSERT INTO categories (Name) VALUES ('{}' )".format(name)
+#             cursor.execute(sql)
+#             connection.commit()
+#             Cat_ID= cursor.lastrowid
+#         return json.dumps({'STATUS':'SUCCESS','CAT_ID': Cat_ID,'CODE':201})
+#     except Exception:
+#         return json.dumps({'STATUS':'ERROR','MSG':'INTERNAL ERROR','CODE':500})
+
+
+@get("/categories")
+def list_category():
+    try:
+        with connection.cursor() as cursor:
+            sql="Select * From categories"
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            connection.commit()
+            return json.dumps({'STATUS':'SUCCESS','CATEGORIES':result,'CODE':200})
+    except Exception:
+        return json.dumps({'STATUS':'ERROR','MSG':'INTERNAL ERROR','CODE':500})
+
+
+
 @get("/")
 def index():
     return template("index.html")
