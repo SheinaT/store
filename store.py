@@ -41,13 +41,23 @@ def get_category():
         return json.dumps({'STATUS':'ERROR','MSG':'INTERNAL ERROR','CODE':500})
 
 
-# @delete("/category/<id>")
-# def delete_category(id):
-#     try:
-#         with connection.cursor() as cursor:
-#             sql = "Select * From categories WHERE NAME= '{}'".format(name)
-#             cursor.execute(sql)
-#             connection.commit()
+@delete("/category/<id>")
+def delete_category(id):
+    try:
+        with connection.cursor() as cursor:
+            query = "SELECT * FROM categories WHERE id={}".format(id)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            if not result:
+                return json.dumps({'STATUS': 'ERROR', 'MSG': 'CATEGORY NOT FOUND', 'CODE': 400})
+
+            sql = "DELETE FROM categories WHERE id = {}".format(id)
+            cursor.execute(sql)
+            connection.commit()
+        return json.dumps({'STATUS': 'SUCCESS','CODE': 201})
+    except Exception:
+        return json.dumps({'STATUS': 'ERROR', 'MSG': 'INTERNAL ERROR', 'CODE': 500})
+
 @get("/")
 def index():
     return template("index.html")
