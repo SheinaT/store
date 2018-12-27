@@ -20,20 +20,34 @@ def admin_portal():
 
 @post("/category")
 def get_category():
+    name = request.POST.get("name")
+    if not name:
+        return json.dumps({'STATUS': 'ERROR', 'MSG': 'NAME PARAMETER IS MISSING', 'CODE': 400})
+
     try:
         with connection.cursor() as cursor:
-            name = request.POST.get("name")
-            sql = "INSERT INTO category VALUES (0,'{}')".format(name)
+            query="Select * From categories WHERE NAME= '{}'".format(name)
+            cursor.execute(query)
+            result = cursor.fetchone()
+            if result:
+                return json.dumps({'STATUS':'ERROR', 'MSG': 'CATEGORY ALREADY EXISTS', 'CODE':200})
+
+            sql = "INSERT INTO categories (Name) VALUES ('{}' )".format(name)
             cursor.execute(sql)
             connection.commit()
-            result = cursor.fetchall()
-        return json.dumps({'STATUS':'SUCCESS','MSG':result,'CODE':201})
-
-    except Exception as e:
-        print (repr(e))
-        return json.dumps({'STATUS':'ERROR','MSG':'Category Already Exists'})
+            Cat_ID= cursor.lastrowid
+        return json.dumps({'STATUS':'SUCCESS','CAT_ID': Cat_ID,'CODE':201})
+    except Exception:
+        return json.dumps({'STATUS':'ERROR','MSG':'INTERNAL ERROR','CODE':500})
 
 
+# @delete("/category/<id>")
+# def delete_category(id):
+#     try:
+#         with connection.cursor() as cursor:
+#             sql = "Select * From categories WHERE NAME= '{}'".format(name)
+#             cursor.execute(sql)
+#             connection.commit()
 @get("/")
 def index():
     return template("index.html")
@@ -55,7 +69,7 @@ def images(filename):
 
 
 def main():
-    run(host='localhost', port=7000)
+    run(host='localhost', port=7001)
 if __name__ == '__main__':
     main()
 
