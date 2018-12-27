@@ -3,10 +3,35 @@ from sys import argv
 import json
 import pymysql
 
+
+connection = pymysql.connect(host='localhost',
+                             user='root',
+                             password='shayshay',
+                             db='store',
+                             charset='utf8mb4',
+                             autocommit=True,
+                             cursorclass=pymysql.cursors.DictCursor)
+cursor = connection.cursor()
+
+
 @get("/admin")
 def admin_portal():
 	return template("pages/admin.html")
 
+@post("/category")
+def get_category():
+    try:
+        with connection.cursor() as cursor:
+            name = request.POST.get("name")
+            sql = "INSERT INTO category VALUES (0,'{}')".format(name)
+            cursor.execute(sql)
+            connection.commit()
+            result = cursor.fetchall()
+        return json.dumps({'STATUS':'SUCCESS','MSG':result,'CODE':201})
+
+    except Exception as e:
+        print (repr(e))
+        return json.dumps({'STATUS':'ERROR','MSG':'Category Already Exists'})
 
 
 @get("/")
@@ -29,4 +54,8 @@ def images(filename):
     return static_file(filename, root='images')
 
 
-run(host='0.0.0.0', port=argv[1])
+def main():
+    run(host='localhost', port=7000)
+if __name__ == '__main__':
+    main()
+
