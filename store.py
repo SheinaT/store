@@ -76,9 +76,10 @@ def list_category():
 @post("/product")
 def add_or_edit():
     try:
+        print(str(request.POST))
         category = request.POST.get("category")
         title = request.POST.get("title")
-        description = request.POST.get("description")
+        description = request.POST.get("desc")
         favorite = request.POST.get("favorite")
         price = request.POST.get("price")
         img_url = request.POST.get("img_url")
@@ -87,6 +88,9 @@ def add_or_edit():
             favorite = True
         else:
             favorite = False
+        if title is None or price is None:
+            return json.dumps({'STATUS': 'ERROR', 'MSG': 'BAD REQUEST', 'CODE': 400})
+
         with connection.cursor() as cursor:
             query = "Select * From products WHERE title= '{}'".format(title)
             cursor.execute(query)
@@ -101,46 +105,68 @@ def add_or_edit():
             connection.commit()
             print("{} operation success".format(title))
             return json.dumps({'STATUS': 'SUCCESS', 'CODE': 201})
-
-    # except:
-    #     try:
-    #         with connection.cursor() as cursor:
-    #             category = request.POST.get("category")
-    #             title = request.POST.get("title")
-    #             description = request.POST.get("description")
-    #             favorite = request.POST.get("favorite")
-    #             if favorite is 'on':
-    #                 favorite = True
-    #             else:
-    #                 favorite = False
-    #             price = request.POST.get("price")
-    #             img_url = request.POST.get("img_url")
-    #             query = "UPDATE products SET decription='{}', favorite={}, price='{}', img_url='{}', category={} WHERE title='{}'".format(description, favorite, price,img_url,category,title)
-    #             cursor.execute(query)
-    #             connection.commit()
-    #             return json.dumps({'STATUS': 'SUCCESS','CODE': 201})
     except Exception as err:
         print(err)
         return json.dumps({'STATUS': 'ERROR', 'MSG': 'INTERNAL ERROR', 'CODE': 500})
 
+@get("/product/<id>")
+def get_product(id):
+    try:
+        with connection.cursor() as cursor:
+                print("in")
+                sql = "SELECT * FROM products WHERE id = '{}'".format(id)
+                cursor.execute(sql)
+                result=cursor.fetchone()
+                if not result:
+                    return json.dumps({'STATUS': 'ERROR', 'MSG': 'PRODUCT NOT FOUND', 'CODE': 401})
+                else:
+                    return json.dumps({'STATUS': 'SUCCESS','PRODUCT':result,'CODE': 200})
+    except Exception as e:
+        print(repr(e))
+        return json.dumps({'STATUS': 'ERROR', 'MSG': 'Internal error', 'CODE': 500})
+
+@delete("/product/<id>")
+def delete_category(id):
+    try:
+        with connection.cursor() as cursor:
+            sql = "DELETE FROM products WHERE id = {}".format(id)
+            cursor.execute(sql)
+            print("deleting {}".format(id))
+            connection.commit()
+            return json.dumps({'STATUS': 'SUCCESS','CODE': 201})
+    except Exception:
+        return json.dumps({'STATUS': 'ERROR', 'MSG': 'INTERNAL ERROR', 'CODE': 500})
 
 
+@get("/products")
+def all_products():
+    try:
+        with connection.cursor() as cursor:
+            sql="Select * From products"
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            print(result)
+            connection.commit()
+            return json.dumps({'STATUS':'SUCCESS','PRODUCTS':result,'CODE':200})
+    except Exception:
+        return json.dumps({'STATUS':'ERROR','MSG':'INTERNAL ERROR','CODE':500})
 
-
-
-
-# @get("/product/<id>")
-# def get_product(id):
+# @get("/category/<id>/products")
 #     try:
-#         with connection.cursor() as cursor:
-#                 sql = "SELECT * FROM product WHERE id = '{}'".format(id)
-#                 cursor.execute(sql)
-#                 result = cursor.fetchall()
-#                 return json.dumps({'STATUS': 'SUCCESS', 'PRODUCTS': result, 'CODE': 200})
-#
-#     except Exception as e:
-#         print(repr(e))
-#         return json.dumps({'STATUS': 'ERROR', 'MSG': 'Internal error', 'CODE': 500})
+#         with connection.cursor()as cursor:
+
+
+
+
+
+
+
+
+# @get("/products")
+# def get_products():
+#     print("all products called")
+
+
 
 @get("/")
 def index():
