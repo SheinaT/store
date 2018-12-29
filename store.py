@@ -151,9 +151,17 @@ def all_products():
     except Exception:
         return json.dumps({'STATUS':'ERROR','MSG':'INTERNAL ERROR','CODE':500})
 
-# @get("/category/<id>/products")
-#     try:
-#         with connection.cursor()as cursor:
+@get("/category/<id>/products")
+def list_products_by_category(id):
+    try:
+        with connection.cursor()as cursor:
+            sql = "SELECT * FROM products WHERE category = {}".format(id)
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            return json.dumps({'STATUS':'SUCCESS','PRODUCTS':result,'CODE': 201})
+    except Exception:
+        return json.dumps({'STATUS': 'ERROR', 'MSG': 'INTERNAL ERROR', 'CODE': 500})
+
 
 
 
