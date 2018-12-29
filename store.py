@@ -76,15 +76,13 @@ def list_category():
 @post("/product")
 def add_or_edit():
     try:
-        print(str(request.POST))
         category = request.POST.get("category")
         title = request.POST.get("title")
         description = request.POST.get("desc")
         favorite = request.POST.get("favorite")
         price = request.POST.get("price")
         img_url = request.POST.get("img_url")
-        print("'{}','{}', '{}','{}',{},{}".format(title, description, price, img_url, favorite, category))
-        if favorite is 'on':
+        if bool(favorite):
             favorite = True
         else:
             favorite = False
@@ -97,13 +95,11 @@ def add_or_edit():
             result = cursor.fetchone()
             if not result:
                 sql="INSERT INTO products (title,description, price, img_url,favorite,category) VALUES ('{}','{}', '{}','{}',{},{})".format(title, description, price, img_url, favorite, category)
-                print("inserting {}".format(title))
             else:
                 sql = "UPDATE products SET description='{}', favorite={}, price='{}', img_url='{}', category={} WHERE title='{}'".format(description, favorite, price, img_url, category, title)
-                print("updating {}".format(title))
+
             cursor.execute(sql)
             connection.commit()
-            print("{} operation success".format(title))
             return json.dumps({'STATUS': 'SUCCESS', 'CODE': 201})
     except Exception as err:
         print(err)
@@ -113,7 +109,6 @@ def add_or_edit():
 def get_product(id):
     try:
         with connection.cursor() as cursor:
-                print("in")
                 sql = "SELECT * FROM products WHERE id = '{}'".format(id)
                 cursor.execute(sql)
                 result=cursor.fetchone()
@@ -131,7 +126,6 @@ def delete_category(id):
         with connection.cursor() as cursor:
             sql = "DELETE FROM products WHERE id = {}".format(id)
             cursor.execute(sql)
-            print("deleting {}".format(id))
             connection.commit()
             return json.dumps({'STATUS': 'SUCCESS','CODE': 201})
     except Exception:
@@ -145,7 +139,6 @@ def all_products():
             sql="Select * From products"
             cursor.execute(sql)
             result = cursor.fetchall()
-            print(result)
             connection.commit()
             return json.dumps({'STATUS':'SUCCESS','PRODUCTS':result,'CODE':200})
     except Exception:
@@ -161,19 +154,6 @@ def list_products_by_category(id):
             return json.dumps({'STATUS':'SUCCESS','PRODUCTS':result,'CODE': 201})
     except Exception:
         return json.dumps({'STATUS': 'ERROR', 'MSG': 'INTERNAL ERROR', 'CODE': 500})
-
-
-
-
-
-
-
-
-
-# @get("/products")
-# def get_products():
-#     print("all products called")
-
 
 
 @get("/")
