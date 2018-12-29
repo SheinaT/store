@@ -59,27 +59,6 @@ def delete_category(id):
         return json.dumps({'STATUS': 'ERROR', 'MSG': 'INTERNAL ERROR', 'CODE': 500})
 
 
-# @post("/product")
-# def get_category():
-#     name = request.POST.get("name")
-#     if not name:
-#         return json.dumps({'STATUS': 'ERROR', 'MSG': 'NAME PARAMETER IS MISSING', 'CODE': 400})
-#
-#     try:
-#         with connection.cursor() as cursor:
-#             query="Select * From categories WHERE NAME= '{}'".format(name)
-#             cursor.execute(query)
-#             result = cursor.fetchone()
-#             if result:
-#                 return json.dumps({'STATUS':'ERROR', 'MSG': 'CATEGORY ALREADY EXISTS', 'CODE':200})
-#
-#             sql = "INSERT INTO categories (Name) VALUES ('{}' )".format(name)
-#             cursor.execute(sql)
-#             connection.commit()
-#             Cat_ID= cursor.lastrowid
-#         return json.dumps({'STATUS':'SUCCESS','CAT_ID': Cat_ID,'CODE':201})
-#     except Exception:
-#         return json.dumps({'STATUS':'ERROR','MSG':'INTERNAL ERROR','CODE':500})
 
 
 @get("/categories")
@@ -94,6 +73,30 @@ def list_category():
     except Exception:
         return json.dumps({'STATUS':'ERROR','MSG':'INTERNAL ERROR','CODE':500})
 
+@post("/product")
+def add_or_edit():
+    title = request.POST.get("title")
+    description = request.POST.get("description")
+    price = request.POST.get("price")
+    img_url = request.POST.get("img_url")
+    category = request.POST.get("category")
+    favorite = request.POST.get("favorite")
+    if not title:
+        return json.dumps({'STATUS': 'ERROR', 'MSG': 'TITLE PARAMETER IS MISSING', 'CODE': 400})
+    try:
+        with connection.cursor() as cursor:
+            query = "Select * From products WHERE category= '{}'".format(category)
+            cursor.execute(query)
+            result = cursor.fetchall()
+            if not result:
+                return json.dumps({'STATUS': 'ERROR', 'MSG': 'CATEGORY DOES NOT FOUND', 'CODE': 404})
+            sql="INSERT INTO products VALUES('{title}','{description}', '{price}','{img_url}','{favorite}','{category}')".format(title,description, price,img_url, favorite, category)
+            cursor.execute(sql)
+            connection.commit()
+            added_result = cursor.fetchall()
+            return json.dumps({'STATUS': 'SUCCESS', 'PRODUCT_ID': added_result, 'CODE': 201})
+    except Exception:
+        return json.dumps({'STATUS': 'ERROR', 'MSG': 'INTERNAL ERROR', 'CODE': 500})
 
 
 @get("/")
