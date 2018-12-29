@@ -75,29 +75,72 @@ def list_category():
 
 @post("/product")
 def add_or_edit():
-    title = request.POST.get("title")
-    description = request.POST.get("description")
-    price = request.POST.get("price")
-    img_url = request.POST.get("img_url")
-    category = request.POST.get("category")
-    favorite = request.POST.get("favorite")
-    if not title:
-        return json.dumps({'STATUS': 'ERROR', 'MSG': 'TITLE PARAMETER IS MISSING', 'CODE': 400})
     try:
+        category = request.POST.get("category")
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        favorite = request.POST.get("favorite")
+        price = request.POST.get("price")
+        img_url = request.POST.get("img_url")
+        print("'{}','{}', '{}','{}',{},{}".format(title, description, price, img_url, favorite, category))
+        if favorite is 'on':
+            favorite = True
+        else:
+            favorite = False
         with connection.cursor() as cursor:
-            query = "Select * From products WHERE category= '{}'".format(category)
+            query = "Select * From products WHERE title= '{}'".format(title)
             cursor.execute(query)
-            result = cursor.fetchall()
+            result = cursor.fetchone()
             if not result:
-                return json.dumps({'STATUS': 'ERROR', 'MSG': 'CATEGORY DOES NOT FOUND', 'CODE': 404})
-            sql="INSERT INTO products VALUES('{title}','{description}', '{price}','{img_url}','{favorite}','{category}')".format(title,description, price,img_url, favorite, category)
+                sql="INSERT INTO products (title,description, price, img_url,favorite,category) VALUES ('{}','{}', '{}','{}',{},{})".format(title, description, price, img_url, favorite, category)
+                print("inserting {}".format(title))
+            else:
+                sql = "UPDATE products SET description='{}', favorite={}, price='{}', img_url='{}', category={} WHERE title='{}'".format(description, favorite, price, img_url, category, title)
+                print("updating {}".format(title))
             cursor.execute(sql)
             connection.commit()
-            added_result = cursor.fetchall()
-            return json.dumps({'STATUS': 'SUCCESS', 'PRODUCT_ID': added_result, 'CODE': 201})
-    except Exception:
+            print("{} operation success".format(title))
+            return json.dumps({'STATUS': 'SUCCESS', 'CODE': 201})
+
+    # except:
+    #     try:
+    #         with connection.cursor() as cursor:
+    #             category = request.POST.get("category")
+    #             title = request.POST.get("title")
+    #             description = request.POST.get("description")
+    #             favorite = request.POST.get("favorite")
+    #             if favorite is 'on':
+    #                 favorite = True
+    #             else:
+    #                 favorite = False
+    #             price = request.POST.get("price")
+    #             img_url = request.POST.get("img_url")
+    #             query = "UPDATE products SET decription='{}', favorite={}, price='{}', img_url='{}', category={} WHERE title='{}'".format(description, favorite, price,img_url,category,title)
+    #             cursor.execute(query)
+    #             connection.commit()
+    #             return json.dumps({'STATUS': 'SUCCESS','CODE': 201})
+    except Exception as err:
+        print(err)
         return json.dumps({'STATUS': 'ERROR', 'MSG': 'INTERNAL ERROR', 'CODE': 500})
 
+
+
+
+
+
+
+# @get("/product/<id>")
+# def get_product(id):
+#     try:
+#         with connection.cursor() as cursor:
+#                 sql = "SELECT * FROM product WHERE id = '{}'".format(id)
+#                 cursor.execute(sql)
+#                 result = cursor.fetchall()
+#                 return json.dumps({'STATUS': 'SUCCESS', 'PRODUCTS': result, 'CODE': 200})
+#
+#     except Exception as e:
+#         print(repr(e))
+#         return json.dumps({'STATUS': 'ERROR', 'MSG': 'Internal error', 'CODE': 500})
 
 @get("/")
 def index():
@@ -120,7 +163,7 @@ def images(filename):
 
 
 def main():
-    run(host='localhost', port=7001)
+    run(host='localhost', port=7003)
 if __name__ == '__main__':
     main()
 
